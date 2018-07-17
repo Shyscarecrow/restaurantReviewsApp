@@ -22,7 +22,7 @@ initMap = () => {
         scrollWheelZoom: false
       });
       L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.jpg70?access_token={mapboxToken}', {
-        mapboxToken: '<your MAPBOX API KEY HERE>',
+        mapboxToken: 'pk.eyJ1Ijoic2h5c2NhcmVjcm93IiwiYSI6ImNqam9wNWVyNTFvcmczcXFpYWloOWN5bnoifQ.wJ3jpdAYxTqydSqOaI32UQ',
         maxZoom: 18,
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -34,22 +34,6 @@ initMap = () => {
     }
   });
 }  
- 
-/* window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-    }
-  });
-} */
 
 /**
  * Get current restaurant from page URL.
@@ -87,8 +71,17 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   address.innerHTML = restaurant.address;
 
   const image = document.getElementById('restaurant-img');
-  image.className = 'restaurant-img'
-  image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.className = 'restaurant-img';
+  //image.src = DBHelper.imageUrlForRestaurant(restaurant);
+
+  const imgurlbase = DBHelper.imageUrlForRestaurant(restaurant, 'header');
+  const imgurl1x = imgurlbase + '_1x.jpg';
+  const imgurl2x = imgurlbase + '_2x.jpg';
+  image.src = imgurl1x;
+  image.srcset = `${imgurl1x} 600w, ${imgurl2x} 1024w`;
+
+
+  image.alt = restaurant.name + ' restaurant promotional image';
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -106,11 +99,13 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
  */
 fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
-  for (let key in operatingHours) {
+   for (let key in operatingHours) {
+  
     const row = document.createElement('tr');
-
-    const day = document.createElement('td');
+    
+    const day = document.createElement('th');
     day.innerHTML = key;
+    day.setAttribute('scope', 'row');
     row.appendChild(day);
 
     const time = document.createElement('td');
@@ -148,19 +143,26 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
  */
 createReviewHTML = (review) => {
   const li = document.createElement('li');
-  const name = document.createElement('p');
+  const name = document.createElement('h3');
   name.innerHTML = review.name;
+  name.className = 'restaurant-review-user';
   li.appendChild(name);
 
   const date = document.createElement('p');
   date.innerHTML = review.date;
+  date.className = 'restaurant-review-date';
   li.appendChild(date);
 
   const rating = document.createElement('p');
   rating.innerHTML = `Rating: ${review.rating}`;
+  rating.className = 'restaurant-review-rating';
   li.appendChild(rating);
 
+  const hr = document.createElement('hr');
+  li.appendChild(hr);
+
   const comments = document.createElement('p');
+  comments.className = 'restaurant-review-comments';
   comments.innerHTML = review.comments;
   li.appendChild(comments);
 
@@ -170,12 +172,16 @@ createReviewHTML = (review) => {
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */
-fillBreadcrumb = (restaurant=self.restaurant) => {
+const fillBreadcrumb = (restaurant = self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
-  li.innerHTML = restaurant.name;
+  const a = document.createElement('a');
+  a.href = window.location;
+  a.innerHTML = restaurant.name;
+  // a.setAttribute('aria-current', 'page');
+  li.appendChild(a);
   breadcrumb.appendChild(li);
-}
+};
 
 /**
  * Get a parameter by name from page URL.
